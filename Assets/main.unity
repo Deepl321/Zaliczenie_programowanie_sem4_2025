@@ -886,6 +886,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   Range: 15
+  Sight: 5
+  AttackRange: 2
   health: 50
 --- !u!195 &1879995437
 NavMeshAgent:

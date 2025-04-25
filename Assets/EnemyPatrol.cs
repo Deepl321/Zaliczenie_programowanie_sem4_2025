@@ -8,12 +8,18 @@ public class EnemyPatrol : MonoBehaviour
     NavMeshAgent Agent;
     [SerializeField] LayerMask groundLayer, playerLayer;
     [SerializeField] float Range;
+    [SerializeField] float Sight; 
+    [SerializeField] float AttackRange; 
+    
     Vector3 Destination;
+    
+    bool playerInSight;
+    bool playerInAttack;
     bool WalkPointSet;
 
     GameObject player;
 
-    [SerializeField] private float health = 50f; // Dodano zmienn¹ zdrowia
+    [SerializeField] private float health = 50f; // Dodano zmiennï¿½ zdrowia
 
     void Start()
     {
@@ -23,8 +29,17 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
-        Patrol();
+        //sprawdzanie booli
+        playerInSight = Physics.CheckSphere(transform.position, Sight, playerLayer);
+        playerInAttack = Physics.CheckSphere(transform.position, AttackRange, playerLayer);
+
+
+        //zmiana na odpowiednie akcje w zaleznosci od pozycji gracza
+        if(!playerInSight && !playerInAttack)Patrol();
+        if(playerInSight && !playerInAttack)Chase();
+        if(playerInSight && playerInAttack)Attack();
     }
+
 
     void Patrol()
     {
@@ -57,7 +72,16 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
-    // Dodano metodê przyjmuj¹c¹ obra¿enia
+    //metoda gonienia gracza 
+    void Chase() {
+        Agent.SetDestination(player.transform.position);
+    }
+    //atakowanie(idk jakos to sie podepnie pod zdrowie twoje)
+    void Attack() {
+
+    }
+
+    // Dodano metodï¿½ przyjmujï¿½cï¿½ obraï¿½enia
     public void TakeDamage(float amount)
     {
         health -= amount;
@@ -67,7 +91,7 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
-    // Metoda obs³uguj¹ca œmieræ przeciwnika
+    // Metoda obsï¿½ugujï¿½ca ï¿½mierï¿½ przeciwnika
     void Die()
     {
         Destroy(gameObject);
