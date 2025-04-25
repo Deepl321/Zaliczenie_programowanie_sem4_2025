@@ -12,7 +12,7 @@ public class EnemyPatrol : MonoBehaviour
     [SerializeField] float AttackRange; 
     
     Vector3 Destination;
-    
+
     bool playerInSight;
     bool playerInAttack;
     bool WalkPointSet;
@@ -30,7 +30,7 @@ public class EnemyPatrol : MonoBehaviour
     void Update()
     {
         //sprawdzanie booli
-        playerInSight = Physics.CheckSphere(transform.position, Sight, playerLayer);
+        playerInSight = Physics.CheckSphere(transform.position, Sight, playerLayer);       
         playerInAttack = Physics.CheckSphere(transform.position, AttackRange, playerLayer);
 
 
@@ -78,7 +78,7 @@ public class EnemyPatrol : MonoBehaviour
     }
     //atakowanie(idk jakos to sie podepnie pod zdrowie twoje)
     void Attack() {
-
+        
     }
 
     // Dodano metod� przyjmuj�c� obra�enia
