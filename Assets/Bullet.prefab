@@ -103,6 +103,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   lifeTime: 3
+  hitEffect: {fileID: 5238538877814813142, guid: 47096eff328e11a418ace7db2d72aa97, type: 3}
+  hitEffectLifeTime: 1
 --- !u!54 &4902768284947514052
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -29,33 +29,58 @@ public class Shooting : MonoBehaviour
     {
         // Pobierz pozycję kursora myszy w świecie
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        Plane groundPlane = new Plane(Vector3.up, -0.7f); // Płaszczyzna na wysokości -0.7
 
-        if (groundPlane.Raycast(ray, out float rayLength))
+        if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Vector3 pointToLook = ray.GetPoint(rayLength);
-            Vector3 direction = (pointToLook - new Vector3(transform.position.x, -0.7f, transform.position.z)).normalized;
+            Vector3 pointToLook = hit.point;
+            Vector3 direction = (pointToLook - transform.position).normalized;
 
-            // Ustawiamy kierunek w płaszczyźnie XZ
-            direction.y = 0f;
+            // Oblicz pozycję początkową pocisku
+            Vector3 spawnPosition = transform.position + direction * spawnDistance;
 
-            // Oblicz pozycję początkową pocisku na krawędzi gracza na wysokości -0.7
-            Vector3 spawnPosition = new Vector3(transform.position.x, -0.7f, transform.position.z) + direction * spawnDistance;
-
-            // Stwórz kopię (klon) prefabrykatu pocisku w pozycji startowej
+            // Stwórz kopię prefabrykatu pocisku w pozycji startowej
             GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
 
             // Ustaw kierunek pocisku
             projectile.transform.forward = direction;
 
-            // Nadaj pociskowi prędkość tylko w płaszczyźnie XZ
+            // Nadaj pociskowi prędkość
             Rigidbody rb = projectile.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.linearVelocity = direction * projectileSpeed;
             }
 
-            // Przekaż wartość obrażeń do skryptu pocisku, jeśli używasz skryptu Projectile
+            // Przekaż wartość obrażeń do skryptu pocisku
+            Projectile projectileScript = projectile.GetComponent<Projectile>();
+            if (projectileScript != null)
+            {
+                projectileScript.damage = damage;
+            }
+        }
+        else
+        {
+            // Jeśli raycast nie trafił żadnego obiektu, wyceluj w maksymalny zasięg
+            Vector3 pointToLook = ray.GetPoint(1000f); // Zakres strzału
+            Vector3 direction = (pointToLook - transform.position).normalized;
+
+            // Oblicz pozycję początkową pocisku
+            Vector3 spawnPosition = transform.position + direction * spawnDistance;
+
+            // Stwórz kopię prefabrykatu pocisku w pozycji startowej
+            GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
+
+            // Ustaw kierunek pocisku
+            projectile.transform.forward = direction;
+
+            // Nadaj pociskowi prędkość
+            Rigidbody rb = projectile.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = direction * projectileSpeed;
+            }
+
+            // Przekaż wartość obrażeń do skryptu pocisku
             Projectile projectileScript = projectile.GetComponent<Projectile>();
             if (projectileScript != null)
             {
