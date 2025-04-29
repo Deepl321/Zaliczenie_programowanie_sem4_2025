@@ -2,15 +2,16 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class EnemyPatrol : MonoBehaviour
 {
     NavMeshAgent Agent;
     [SerializeField] LayerMask groundLayer, playerLayer;
     [SerializeField] float Range;
-    [SerializeField] float Sight; 
-    [SerializeField] float AttackRange; 
-    
+    [SerializeField] float Sight;
+    [SerializeField] float AttackRange;
+
     Vector3 Destination;
 
     bool playerInSight;
@@ -19,7 +20,9 @@ public class EnemyPatrol : MonoBehaviour
 
     GameObject player;
 
-    [SerializeField] private float health = 50f; // Dodano zmienn� zdrowia
+    [SerializeField] private float health = 50f; // Dodano zmienną zdrowia
+
+    public event Action<float> OnTakeDamage;
 
     void Start()
     {
@@ -29,17 +32,15 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
-        //sprawdzanie booli
-        playerInSight = Physics.CheckSphere(transform.position, Sight, playerLayer);       
+        // Sprawdzanie booli
+        playerInSight = Physics.CheckSphere(transform.position, Sight, playerLayer);
         playerInAttack = Physics.CheckSphere(transform.position, AttackRange, playerLayer);
 
-
-        //zmiana na odpowiednie akcje w zaleznosci od pozycji gracza
-        if(!playerInSight && !playerInAttack)Patrol();
-        if(playerInSight && !playerInAttack)Chase();
-        if(playerInSight && playerInAttack)Attack();
+        // Zmiana na odpowiednie akcje w zależności od pozycji gracza
+        if (!playerInSight && !playerInAttack) Patrol();
+        if (playerInSight && !playerInAttack) Chase();
+        if (playerInSight && playerInAttack) Attack();
     }
-
 
     void Patrol()
     {
@@ -61,8 +62,8 @@ public class EnemyPatrol : MonoBehaviour
 
     void SearchForDestination()
     {
-        float z = Random.Range(-Range, Range);
-        float x = Random.Range(-Range, Range);
+        float z = UnityEngine.Random.Range(-Range, Range);
+        float x = UnityEngine.Random.Range(-Range, Range);
 
         Destination = new Vector3(transform.position.x + x, transform.position.y, transform.position.z + z);
 
@@ -72,26 +73,35 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
-    //metoda gonienia gracza 
-    void Chase() {
+    // Metoda gonienia gracza 
+    void Chase()
+    {
         Agent.SetDestination(player.transform.position);
     }
-    //atakowanie(idk jakos to sie podepnie pod zdrowie twoje)
-    void Attack() {
-        
+
+    // Atakowanie czy cos tam jeszcze bedzie
+    void Attack()
+    {
+        // Implementacja ataku
     }
 
-    // Dodano metod� przyjmuj�c� obra�enia
+    // Dodano metodę przyjmującą obrażenia
     public void TakeDamage(float amount)
     {
         health -= amount;
+        OnTakeDamage?.Invoke(health);
         if (health <= 0f)
         {
             Die();
         }
     }
 
-    // Metoda obs�uguj�ca �mier� przeciwnika
+    public float GetHealth()
+    {
+        return health;
+    }
+
+    // Metoda na śmierć przeciwnika
     void Die()
     {
         Destroy(gameObject);
