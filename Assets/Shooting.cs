@@ -2,90 +2,94 @@ using UnityEngine;
 
 public class Shooting : MonoBehaviour
 {
-    [SerializeField] private float damage = 10f;
-    [SerializeField] private float fireRate = 1f;
-    [SerializeField] private float projectileSpeed = 20f;
-    [SerializeField] private GameObject projectilePrefab;
-    [SerializeField] private float spawnDistance = 1f; // Odległość od środka gracza, z której będzie wystrzeliwany pocisk
-
     private float nextTimeToFire = 0f;
     private Camera mainCamera;
+    private Weapon currentWeapon;
 
     void Start()
     {
         mainCamera = Camera.main;
+        UpdateWeapon();
     }
 
     void Update()
     {
+        // Aktualizuj broń, jeśli się zmieniła
+        if (WeaponManager.Instance != null)
+        {
+            Weapon newWeapon = WeaponManager.Instance.GetCurrentWeapon();
+            if (newWeapon != currentWeapon)
+            {
+                currentWeapon = newWeapon;
+                Debug.Log("Aktualna broń ustawiona na: " + currentWeapon.weaponName);
+            }
+        }
+
         if (Input.GetMouseButton(0) && Time.time >= nextTimeToFire)
         {
-            nextTimeToFire = Time.time + 1f / fireRate;
-            Shoot();
+            if (currentWeapon != null)
+            {
+                nextTimeToFire = Time.time + 1f / currentWeapon.fireRate;
+                Shoot();
+            }
+            else
+            {
+                Debug.LogWarning("Brak ustawionej broni.");
+            }
         }
     }
 
     void Shoot()
     {
-        // Pobierz pozycję kursora myszy w świecie
+        if (currentWeapon == null || currentWeapon.projectilePrefab == null)
+        {
+            Debug.LogWarning("Brak broni lub prefabrykatu pocisku.");
+            return;
+        }
+
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        Vector3 pointToLook;
 
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Vector3 pointToLook = hit.point;
-            Vector3 direction = (pointToLook - transform.position).normalized;
-
-            // Oblicz pozycję początkową pocisku
-            Vector3 spawnPosition = transform.position + direction * spawnDistance;
-
-            // Stwórz kopię prefabrykatu pocisku w pozycji startowej
-            GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
-
-            // Ustaw kierunek pocisku
-            projectile.transform.forward = direction;
-
-            // Nadaj pociskowi prędkość
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = direction * projectileSpeed;
-            }
-
-            // Przekaż wartość obrażeń do skryptu pocisku
-            Projectile projectileScript = projectile.GetComponent<Projectile>();
-            if (projectileScript != null)
-            {
-                projectileScript.damage = damage;
-            }
+            pointToLook = hit.point;
         }
         else
         {
-            // Jeśli raycast nie trafił żadnego obiektu, wyceluj w maksymalny zasięg
-            Vector3 pointToLook = ray.GetPoint(1000f); // Zakres strzału
-            Vector3 direction = (pointToLook - transform.position).normalized;
+            pointToLook = ray.GetPoint(1000f); // Zakres strzału
+        }
 
-            // Oblicz pozycję początkową pocisku
-            Vector3 spawnPosition = transform.position + direction * spawnDistance;
+        Vector3 direction = (pointToLook - transform.position).normalized;
 
-            // Stwórz kopię prefabrykatu pocisku w pozycji startowej
-            GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
+        Vector3 spawnPosition = transform.position + direction * currentWeapon.spawnDistance;
 
-            // Ustaw kierunek pocisku
-            projectile.transform.forward = direction;
+        GameObject projectile = Instantiate(currentWeapon.projectilePrefab, spawnPosition, Quaternion.identity);
 
-            // Nadaj pociskowi prędkość
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = direction * projectileSpeed;
-            }
+        projectile.transform.forward = direction;
 
-            // Przekaż wartość obrażeń do skryptu pocisku
-            Projectile projectileScript = projectile.GetComponent<Projectile>();
-            if (projectileScript != null)
-            {
-                projectileScript.damage = damage;
-            }
+        Rigidbody rb = projectile.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = direction * currentWeapon.projectileSpeed;
+        }
+
+        Projectile projectileScript = projectile.GetComponent<Projectile>();
+        if (projectileScript != null)
+        {
+            projectileScript.damage = currentWeapon.damage;
+        }
+    }
+
+    void UpdateWeapon()
+    {
+        if (WeaponManager.Instance != null)
+        {
+            currentWeapon = WeaponManager.Instance.GetCurrentWeapon();
+            Debug.Log("Broń zaktualizowana: " + currentWeapon.weaponName);
+        }
+        else
+        {
+            Debug.LogError("WeaponManager nie jest zainicjalizowany.");
         }
     }
 }
