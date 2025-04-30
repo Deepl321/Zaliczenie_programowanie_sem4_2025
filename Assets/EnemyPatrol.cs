@@ -20,7 +20,10 @@ public class EnemyPatrol : MonoBehaviour
 
     GameObject player;
 
-    [SerializeField] private float health = 50f; // Dodano zmienną zdrowia
+    [SerializeField] private float health = 50f;
+    [SerializeField] private float attackCooldown = 1.5f;
+    [SerializeField] private int damage = 10;
+    private float lastAttackTime;
 
     public event Action<float> OnTakeDamage;
 
@@ -32,11 +35,9 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
-        // Sprawdzanie booli
         playerInSight = Physics.CheckSphere(transform.position, Sight, playerLayer);
         playerInAttack = Physics.CheckSphere(transform.position, AttackRange, playerLayer);
 
-        // Zmiana na odpowiednie akcje w zależności od pozycji gracza
         if (!playerInSight && !playerInAttack) Patrol();
         if (playerInSight && !playerInAttack) Chase();
         if (playerInSight && playerInAttack) Attack();
@@ -73,19 +74,32 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
-    // Metoda gonienia gracza 
     void Chase()
     {
         Agent.SetDestination(player.transform.position);
     }
 
-    // Atakowanie czy cos tam jeszcze bedzie
     void Attack()
     {
-        // Implementacja ataku
+        Agent.SetDestination(transform.position); 
+
+        if (Time.time - lastAttackTime >= attackCooldown)
+        {
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+            if (distance <= AttackRange)
+            {
+                //do skryptu od zdrowia
+                PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.PlayerTakeDamage(damage);
+                }
+
+                lastAttackTime = Time.time;
+            }
+        }
     }
 
-    // Dodano metodę przyjmującą obrażenia
     public void TakeDamage(float amount)
     {
         health -= amount;
@@ -101,7 +115,6 @@ public class EnemyPatrol : MonoBehaviour
         return health;
     }
 
-    // Metoda na śmierć przeciwnika
     void Die()
     {
         Destroy(gameObject);
