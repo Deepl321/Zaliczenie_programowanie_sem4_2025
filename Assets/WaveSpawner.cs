@@ -38,11 +38,22 @@ public class WaveSpawner : MonoBehaviour
                     enemiesToSpawn.RemoveAt(0);
                     spawnedEnemies.Add(enemy);
                     spawnTimer = spawnInterval;
+
+                    // Register the enemy with the indicator system
+                    WorldSpaceEnemyIndicator indicatorSystem = FindObjectOfType<WorldSpaceEnemyIndicator>();
+                    if (indicatorSystem != null)
+                    {
+                        indicatorSystem.RegisterEnemy(enemy.transform);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("WorldSpaceEnemyIndicator not found! Cannot register enemy indicator.");
+                    }
                 }
             }
             else
             {
-                waveTimer = 0; // No more enemies to spawn
+                waveTimer = 0;
             }
         }
         else
@@ -92,11 +103,11 @@ public class WaveSpawner : MonoBehaviour
 
     private Vector3 GetRandomSpawnPosition()
     {
-        for (int i = 0; i < 10; i++) // Try up to 10 times
+        for (int i = 0; i < 10; i++)
         {
             Vector3 randomPos = transform.position + new Vector3(
                 Random.Range(-spawnRadius, spawnRadius),
-                20f, // Height above ground for raycast
+                20f,
                 Random.Range(-spawnRadius, spawnRadius)
             );
 

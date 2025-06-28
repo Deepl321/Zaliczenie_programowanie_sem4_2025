@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - WaveSpawner
+  - Enemy
   layers:
   - Default
   - TransparentFX

@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: -8383034457863559739}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -153,7 +153,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   Range: 20
-  Sight: 5
+  Sight: 15
   AttackRange: 3
   health: 150
   attackCooldown: 1.5
